@@ -1,0 +1,206 @@
+﻿
+<!DOCTYPE HTML>
+<HTML lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <link rel="canonical" href="#" />
+    <title>@ViewBag.Title</title>
+    <meta name="description" content="@((ViewBag.MetaDesc) ?? "Kinh doanh đồ gia dụng")" />
+    <meta name="keywords" content="@((ViewBag.MetaKey) ?? "Kinh doanh đồ gia dụng.")" />
+
+    <link rel="icon" href="~/Public/images/icon-k.png">
+    <link rel="stylesheet" href="~/Public/css/bootstrap.min.css">
+    <!-- owl -->
+    <link rel="stylesheet" href="~/Public/css/owl.carousel.css">
+    <link rel="stylesheet" href="~/Public/css/all.min.css">
+    <link rel="stylesheet" href="~/Public/css/imageSprite.css" />
+    <script src="~/Public/js/sweetalert2@9.js"></script>
+    <script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
+    <link href="~/Public/css/stylee.css" rel="stylesheet" />
+
+    @*<link href="~/Public/css/styleshop.css" rel="stylesheet" />*@
+    <script src="~/Public/js/jquery-3.5.1.js"></script>
+    <script src="~/Public/js/SomeeAdsRemover.js"></script>
+    <style>
+        .icon {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            cursor: pointer;
+            background-color: aqua;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        #chat-container {
+            display: none;
+            position: fixed;
+            bottom: 50px;
+            left: 50px;
+            width: 300px;
+            border: 1px solid #ccc;
+        }
+
+        .chat-content {
+            height: 300px;
+            overflow-y: auto;
+        }
+
+        .person {
+            background-color: #f5f5f5;
+            padding: 10px;
+            margin-bottom: 5px;
+        }
+
+        #input-container {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px;
+            background-color: #fff;
+        }
+
+        #message-input {
+            flex-grow: 1;
+            padding: 5px;
+            margin-right: 10px;
+        }
+
+        #send-button {
+            padding: 5px 10px;
+            background-color: #4CAF50;
+            color: #fff;
+            border: none;
+            cursor: pointer;
+        }
+
+            #send-button:hover {
+                background-color: #45a049;
+            }
+
+        .message {
+            word-wrap: break-word;
+        }
+    </style>
+    </style>
+
+</head>
+
+<body>
+
+    @Html.Action("Header", "Module")
+
+    @RenderBody()
+
+    @Html.Action("Footer", "Module")
+
+    <div style="background:#f3f3f3">
+        <div class="copyright container-91">
+            © NTK 2023
+        </div>
+    </div>
+    <div id="bttop" style="display: none;">
+        <span>Về đầu trang<i class="fas fa-long-arrow-alt-up text-center px-2 pb-1" style="transform: rotate(90deg);"></i></span>
+    </div>
+
+    <!--ChatGPT-->
+    <div id="chatbox">
+        <div id="icon-message" class="icon">
+            💬
+        </div>
+        <div id="chat-container">
+            <div class="chat-content bg-light">
+                <div class="person">
+                    <p>ChatGPT</p>
+                    <div class="message">Xin chào!</div>
+                </div>
+            </div>
+            <form id="input-container">
+                <input type="text" id="message-input" placeholder="Type your message...">
+                <button type="submit" id="send-button">Send</button>
+            </form>
+        </div>
+    </div>
+    <script>
+        const chatgpt = (cnt) => `
+                <div class="person">
+                    <p>ChatGPT</p>
+                    <div class="message">${cnt}</div>
+                </div>`
+        const me = (cnt) => `
+                <div class="person">
+                    <p>You</p>
+                    <div class="message">${cnt}</div>
+                </div>`
+        const btnSubmit = $("#send-button");
+        $("form#input-container").on("submit", function (e) {
+            e.preventDefault();
+            var message = $("#message-input").val();
+            if (message.trim() !== "") {
+                $(".chat-content").append(me(message));
+                $("#message-input").val("");
+            }
+            $.ajax({
+                url: "https://api.openai.com/v1/chat/completions",
+                method: "POST",
+                contentType: "application/json",
+                headers: {
+                    "Authorization": "Bearer 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",
+                },
+                data:
+                    JSON.stringify({
+                        "model": "gpt-3.5-turbo",
+                        "messages": [
+                            {
+                                "role": "assistant",
+                                "content": "You are a sales helper. Trả lời các câu hỏi sau bẳng tiếng việt! " + message
+                            }
+                        ]
+                    })
+                , success: function (res) {
+                    console.log(res.data)
+                    $(".chat-content").append(chatgpt(res.data.choices[0].message.content))
+                }, error: function (res) {
+                    console.log(res)
+                    $(".chat-content").append(chatgpt(res.responseJSON.error.message))
+                }, complete: function () {
+                    btnSubmit.attr("disable", false)
+                    setTimeout(() => {
+                        $(".chat-content").animate({ scrollTop: $('.chat-content')[0].scrollHeight }, 0)
+                    })
+                }, beforeSend: function () {
+                    btnSubmit.attr("disable", true)
+                }
+            })
+        })
+        $(document).ready(function () {
+            $("#icon-message").click(function () {
+                $("#chat-container").toggle();
+            });
+        });
+
+    </script>
+    <!-- owl -->
+    <script src="~/Public/js/owl.carousel.js"></script>
+
+    <script src="~/Public/js/popper.min.js"></script>
+    <script src="~/Public/js/bootstrap.min.js"></script>
+    <script src="~/Public/js/target.min.js"></script>
+    <div id="fb-root"></div>
+    <script async defer crossorigin="anonymous" src="https://connect.facebook.net/vi_VN/sdk.js#xfbml=1&version=v9.0&appId=699266887289373&autoLogAppEvents=1" nonce="xJm9L3lp"></script>
+    <script>
+        $(document).ready(function () {
+            $("div[style='opacity: 0.9; z-index: 2147483647; position: fixed; left: 0px; bottom: 0px; height: 65px; right: 0px; display: block; width: 100%; background-color: #202020; margin: 0px; padding: 0px;']").remove();
+            $("div[style='margin: 0px; padding: 0px; left: 0px; width: 100%; height: 65px; right: 0px; bottom: 0px; display: block; position: fixed; z-index: 2147483647; opacity: 0.9; background-color: rgb(32, 32, 32);']").remove();
+            $("div[onmouseover='S_ssac();']").remove();
+            $("center").remove();
+            $("div[style='height: 65px;']").remove();
+        });
+    </script>
+</body>
+
+</HTML>
